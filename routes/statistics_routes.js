@@ -83,4 +83,30 @@ module.exports = function(app, connection) {
             });
         return;
     });
+
+    app.get("/api/statistics/completeAPs", (req, res) => {
+        console.log("Got: complete APs");
+
+        connection.query("SELECT HEX(bssid) as bssid, essid, COUNT(essid) AS num_reported FROM aps GROUP BY essid LIMIT 50;", function(err, result) {
+            if(err) {
+                res.status(500).json({"error": "Internal server error"});
+                console.log(err);
+                return;
+            }
+            res.send(result);
+        });
+    });
+
+    app.get("/api/statistics/completeUnits", (req, res) => {
+        console.log("Got: complete Units");
+
+        connection.query("SELECT units.name, units.country, units.created_at, units.identity, COUNT(DISTINCT aps.bssid) AS bssidCount FROM units JOIN aps ON units.identity = aps.identity GROUP BY units.identity, aps.identity LIMIT 50", function(err, result) {
+            if(err) {
+                res.status(500).json({"error": "Internal server error"});
+                console.log(err);
+                return;
+            }
+            res.send(result);
+        });
+    });
 };
